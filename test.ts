@@ -63,6 +63,8 @@ const password = process.env.MCAT_PASSWORD;
         await page.waitForLoadState("domcontentloaded");
         await randomTimeout(2000, 3000);
 
+        await context.storageState({ path: "auth.json" });
+
         if (
             !(await page.locator("#testCenter_0").innerText()).includes(
                 "None available"
@@ -76,10 +78,7 @@ const password = process.env.MCAT_PASSWORD;
             console.log("No MCAT Test Centers Available");
         }
         await randomTimeout(60000, 120000);
-        page.reload();
     }
-
-    // await browser.close();
 })();
 
 async function addStealth(context) {

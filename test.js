@@ -38,77 +38,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var message_1 = require("./message");
 var firefox = require("playwright").firefox;
-// const username = "vhjulie12";
-// const password = "Taeddypoppy1.";
-var username = "vitolin1000";
-var password = "Rip&roach123";
-// (async () => {
-//     const browser = await firefox.launch({ headless: false });
-//     const context = await browser.newContext();
-//     const page = await context.newPage();
-//     await addStealth(context);
-//     await page.goto(
-//         "https://students-residents.aamc.org/register-mcat-exam/register-mcat-exam"
-//     );
-//     await page
-//         .getByRole("link", { name: "Register for the MCAT Exam" })
-//         .click();
-//     await randomTimeout(1000, 2000);
-//     await page.waitForLoadState("domcontentloaded");
-//     await page.getByPlaceholder("Enter User Name").fill(username);
-//     await randomTimeout(1000, 2000);
-//     await page.getByPlaceholder("Enter Password").fill(password);
-//     await randomTimeout(1000, 2000);
-//     await page.getByRole("button", { name: "Sign In" }).click();
-//     await page.waitForLoadState("domcontentloaded");
-//     await randomTimeout(3000, 5000);
-//     await context.storageState({ path: "auth.json" });
-//     await page.getByRole("button", { name: "Schedule an Exam" }).click();
-//     await randomTimeout(1000, 2000);
-//     await page.getByRole("button", { name: "Agree" }).click();
-//     await randomTimeout(1000, 2000);
-//     await page.getByRole("img", { name: "Click for calendar" }).click();
-//     await randomTimeout(1000, 2000);
-//     if (page.getByRole("button", { name: "> Next Month, February" })) {
-//         await page
-//             .getByRole("button", { name: "> Next Month, February" })
-//             .click();
-//         await randomTimeout(1000, 2000);
-//     }
-//     if (page.getByRole("button", { name: "> Next Month, March" })) {
-//         await page.getByRole("button", { name: "> Next Month, March" }).click();
-//         await randomTimeout(1000, 2000);
-//     }
-//     // TEST BLOCK
-//     await page.getByRole("button", { name: "> Next Month, April" }).click();
-//     await randomTimeout(1000, 2000);
-//     await page.getByRole("button", { name: "> Next Month, May" }).click();
-//     await randomTimeout(1000, 2000);
-//     await page.getByLabel("Saturday 31st of May 2025").click();
-//     await randomTimeout(1000, 2000);
-//     // TEST BLOCK
-//     // await page.getByLabel("Friday 21st of March 2025").click();
-//     // await randomTimeout(1000, 2000);
-//     await page.getByRole("button", { name: "Search" }).click();
-//     await randomTimeout(1000, 2000);
-//     // await page.locator("#notifyMeButton_47048").click();
-//     // await randomTimeout(1000, 2000);
-//     // await page.locator("#notifyMeButton_54861").click();
-//     // await randomTimeout(1000, 2000);
-//     if (
-//         !(await page.locator("#testCenter_0").innerText()).includes(
-//             "None available"
-//         ) ||
-//         !(await page.locator("#testCenter_1").innerText()).includes(
-//             "None available"
-//         )
-//     ) {
-//         sendMessage("MCAT Test Centers Available!");
-//     } else {
-//         sendMessage("No MCAT Test Centers Available");
-//     }
-//     // await browser.close();
-// })();
+require("dotenv").config({ path: "./secrets.env" });
+var username = process.env.MCAT_USERNAME;
+var password = process.env.MCAT_PASSWORD;
 (function () { return __awaiter(void 0, void 0, void 0, function () {
     var browser, context, cookies, page, _a;
     return __generator(this, function (_b) {
@@ -210,7 +142,7 @@ var password = "Rip&roach123";
                 _b.sent();
                 _b.label = 32;
             case 32:
-                if (!true) return [3 /*break*/, 41];
+                if (!true) return [3 /*break*/, 42];
                 return [4 /*yield*/, page.getByRole("button", { name: "Search" }).click()];
             case 33:
                 _b.sent();
@@ -223,24 +155,31 @@ var password = "Rip&roach123";
                 return [4 /*yield*/, randomTimeout(2000, 3000)];
             case 36:
                 _b.sent();
-                return [4 /*yield*/, page.locator("#testCenter_0").innerText()];
+                return [4 /*yield*/, context.storageState({ path: "auth.json" })];
             case 37:
-                _a = !(_b.sent()).includes("None available");
-                if (_a) return [3 /*break*/, 39];
-                return [4 /*yield*/, page.locator("#testCenter_1").innerText()];
+                _b.sent();
+                return [4 /*yield*/, page.locator("#testCenter_0").innerText()];
             case 38:
                 _a = !(_b.sent()).includes("None available");
-                _b.label = 39;
+                if (_a) return [3 /*break*/, 40];
+                return [4 /*yield*/, page.locator("#testCenter_1").innerText()];
             case 39:
+                _a = !(_b.sent()).includes("None available");
+                _b.label = 40;
+            case 40:
                 if (_a) {
                     (0, message_1.sendMessage)("MCAT Test Centers Available!");
                 }
-                return [4 /*yield*/, randomTimeout(60000, 120000)];
-            case 40:
+                else {
+                    console.log("No MCAT Test Centers Available");
+                }
+                // await randomTimeout(60000, 120000);
+                return [4 /*yield*/, randomTimeout(10000, 20000)];
+            case 41:
+                // await randomTimeout(60000, 120000);
                 _b.sent();
-                page.reload();
                 return [3 /*break*/, 32];
-            case 41: return [2 /*return*/];
+            case 42: return [2 /*return*/];
         }
     });
 }); })();

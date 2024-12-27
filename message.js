@@ -18,4 +18,3 @@ function sendMessage(message_content) {
         console.error("Error sending message:", error);
     });
 }
-// sendMessage("Hello, World!");
