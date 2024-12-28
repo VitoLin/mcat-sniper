@@ -1,3 +1,3 @@
 #!/bin/bash
 
-tsc test.ts && node test.js
+tsc && node ./dist/mcat.js

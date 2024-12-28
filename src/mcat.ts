@@ -1,11 +1,11 @@
-import { userInfo } from "os";
+import { interceptors } from "undici-types";
 import { sendMessage } from "./message";
-const { firefox } = require("playwright");
+import { BrowserContext, firefox } from "playwright";
 
 require("dotenv").config({ path: "./secrets.env" });
 
-const username = process.env.MCAT_USERNAME;
-const password = process.env.MCAT_PASSWORD;
+const username: string = process.env.MCAT_USERNAME || "";
+const password: string = process.env.MCAT_PASSWORD || "";
 
 (async () => {
     const browser = await firefox.launch({ headless: false });
@@ -97,7 +97,7 @@ const password = process.env.MCAT_PASSWORD;
     }
 })();
 
-async function addStealth(context) {
+async function addStealth(context: BrowserContext) {
     const enabledEvasions = [
         "chrome.app",
         "chrome.csi",
@@ -119,17 +119,17 @@ async function addStealth(context) {
     );
     const stealth = {
         callbacks: [] as { cb: Function; a: any }[],
-        async evaluateOnNewDocument(...args) {
+        async evaluateOnNewDocument(...args: any[]) {
             this.callbacks.push({ cb: args[0], a: args[1] });
         },
     };
     evasions.forEach((e) => e().onPageCreated(stealth));
     for (let evasion of stealth.callbacks) {
-        await context.addInitScript(evasion.cb, evasion.a);
+        await context.addInitScript(evasion.cb as any, evasion.a);
     }
 }
 
-function randomTimeout(min, max) {
+function randomTimeout(min: number, max: number) {
     return new Promise((resolve) =>
         setTimeout(resolve, Math.random() * (max - min) + min)
     );
