@@ -14,70 +14,86 @@ const password = process.env.MCAT_PASSWORD;
     const page = await context.newPage();
 
     await addStealth(context);
-
-    await page.goto(
-        "https://students-residents.aamc.org/register-mcat-exam/register-mcat-exam"
-    );
-    await page
-        .getByRole("link", { name: "Register for the MCAT Exam" })
-        .click();
-    await randomTimeout(1000, 2000);
-
-    await page.waitForLoadState("domcontentloaded");
-    if (page.url().includes("login")) {
-        await page.getByPlaceholder("Enter User Name").fill(username);
-        await randomTimeout(1000, 2000);
-        await page.getByPlaceholder("Enter Password").fill(password);
-        await randomTimeout(1000, 2000);
-        await page.getByRole("button", { name: "Sign In" }).click();
-        await page.waitForLoadState("domcontentloaded");
-        await randomTimeout(3000, 5000);
-    }
-
-    await page.getByRole("button", { name: "Schedule an Exam" }).click();
-    await randomTimeout(1000, 2000);
-    await page.getByRole("button", { name: "Agree" }).click();
-    await randomTimeout(1000, 2000);
-
-    await page.getByRole("img", { name: "Click for calendar" }).click();
-    await randomTimeout(1000, 2000);
-
-    if (page.getByRole("button", { name: "> Next Month, February" })) {
+    try {
+        await page.goto(
+            "https://students-residents.aamc.org/register-mcat-exam/register-mcat-exam"
+        );
         await page
-            .getByRole("button", { name: "> Next Month, February" })
+            .getByRole("link", { name: "Register for the MCAT Exam" })
             .click();
         await randomTimeout(1000, 2000);
-    }
-    if (page.getByRole("button", { name: "> Next Month, March" })) {
-        await page.getByRole("button", { name: "> Next Month, March" }).click();
-        await randomTimeout(1000, 2000);
-    }
-
-    await page.getByLabel("Friday 21st of March 2025").click();
-    await randomTimeout(1000, 2000);
-
-    while (true) {
-        await page.getByRole("button", { name: "Search" }).click();
-        await randomTimeout(1000, 2000);
 
         await page.waitForLoadState("domcontentloaded");
-        await randomTimeout(2000, 3000);
+        await randomTimeout(5000, 6000);
 
-        await context.storageState({ path: "auth.json" });
-
-        if (
-            !(await page.locator("#testCenter_0").innerText()).includes(
-                "None available"
-            ) ||
-            !(await page.locator("#testCenter_1").innerText()).includes(
-                "None available"
-            )
-        ) {
-            sendMessage("MCAT Test Centers Available!");
-        } else {
-            console.log("No MCAT Test Centers Available");
+        if (page.url().includes("login")) {
+            await page.getByPlaceholder("Enter User Name").fill(username);
+            await randomTimeout(1000, 2000);
+            await page.getByPlaceholder("Enter Password").fill(password);
+            await randomTimeout(1000, 2000);
+            await page.getByRole("button", { name: "Sign In" }).click();
+            await page.waitForLoadState("domcontentloaded");
+            await randomTimeout(3000, 5000);
         }
-        await randomTimeout(60000, 120000);
+
+        await page.getByRole("button", { name: "Schedule an Exam" }).click();
+        await randomTimeout(1000, 2000);
+        await page.getByRole("button", { name: "Agree" }).click();
+        await randomTimeout(1000, 2000);
+
+        await page.getByRole("img", { name: "Click for calendar" }).click();
+        await randomTimeout(1000, 2000);
+
+        if (page.getByRole("button", { name: "> Next Month, February" })) {
+            await page
+                .getByRole("button", { name: "> Next Month, February" })
+                .click();
+            await randomTimeout(1000, 2000);
+        }
+        if (page.getByRole("button", { name: "> Next Month, March" })) {
+            await page
+                .getByRole("button", { name: "> Next Month, March" })
+                .click();
+            await randomTimeout(1000, 2000);
+        }
+
+        await page.getByLabel("Friday 21st of March 2025").click();
+        await randomTimeout(1000, 2000);
+
+        while (true) {
+            await page.getByRole("button", { name: "Search" }).click();
+            await randomTimeout(1000, 2000);
+
+            await page.waitForLoadState("domcontentloaded");
+            await randomTimeout(2000, 3000);
+
+            await context.storageState({ path: "auth.json" });
+
+            if (
+                !(await page.locator("#testCenter_0").innerText()).includes(
+                    "None available"
+                ) ||
+                !(await page.locator("#testCenter_1").innerText()).includes(
+                    "None available"
+                )
+            ) {
+                sendMessage("MCAT Test Centers Available!");
+            } else {
+                console.log("No MCAT Test Centers Available");
+            }
+            await randomTimeout(60000, 120000);
+        }
+    } catch (error) {
+        console.error("An error occurred:", error);
+
+        // Take a screenshot on error
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const screenshotPath = `error-screenshot-${timestamp}.png`;
+        await page.screenshot({ path: screenshotPath });
+        console.log(`Screenshot saved: ${screenshotPath}`);
+
+        // Optional: Close browser after error
+        await browser.close();
     }
 })();
 

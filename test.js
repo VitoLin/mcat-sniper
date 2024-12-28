@@ -42,7 +42,7 @@ require("dotenv").config({ path: "./secrets.env" });
 var username = process.env.MCAT_USERNAME;
 var password = process.env.MCAT_PASSWORD;
 (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var browser, context, cookies, page, _a;
+    var browser, context, cookies, page, _a, error_1, timestamp, screenshotPath;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0: return [4 /*yield*/, firefox.launch({ headless: false })];
@@ -60,126 +60,148 @@ var password = process.env.MCAT_PASSWORD;
                 return [4 /*yield*/, addStealth(context)];
             case 5:
                 _b.sent();
-                return [4 /*yield*/, page.goto("https://students-residents.aamc.org/register-mcat-exam/register-mcat-exam")];
+                _b.label = 6;
             case 6:
+                _b.trys.push([6, 45, , 48]);
+                return [4 /*yield*/, page.goto("https://students-residents.aamc.org/register-mcat-exam/register-mcat-exam")];
+            case 7:
                 _b.sent();
                 return [4 /*yield*/, page
                         .getByRole("link", { name: "Register for the MCAT Exam" })
                         .click()];
-            case 7:
-                _b.sent();
-                return [4 /*yield*/, randomTimeout(1000, 2000)];
             case 8:
                 _b.sent();
-                return [4 /*yield*/, page.waitForLoadState("domcontentloaded")];
+                return [4 /*yield*/, randomTimeout(1000, 2000)];
             case 9:
                 _b.sent();
-                if (!page.url().includes("login")) return [3 /*break*/, 17];
-                return [4 /*yield*/, page.getByPlaceholder("Enter User Name").fill(username)];
+                return [4 /*yield*/, page.waitForLoadState("domcontentloaded")];
             case 10:
                 _b.sent();
-                return [4 /*yield*/, randomTimeout(1000, 2000)];
+                return [4 /*yield*/, randomTimeout(5000, 6000)];
             case 11:
                 _b.sent();
-                return [4 /*yield*/, page.getByPlaceholder("Enter Password").fill(password)];
+                if (!page.url().includes("login")) return [3 /*break*/, 19];
+                return [4 /*yield*/, page.getByPlaceholder("Enter User Name").fill(username)];
             case 12:
                 _b.sent();
                 return [4 /*yield*/, randomTimeout(1000, 2000)];
             case 13:
                 _b.sent();
-                return [4 /*yield*/, page.getByRole("button", { name: "Sign In" }).click()];
+                return [4 /*yield*/, page.getByPlaceholder("Enter Password").fill(password)];
             case 14:
                 _b.sent();
-                return [4 /*yield*/, page.waitForLoadState("domcontentloaded")];
+                return [4 /*yield*/, randomTimeout(1000, 2000)];
             case 15:
                 _b.sent();
-                return [4 /*yield*/, randomTimeout(3000, 5000)];
+                return [4 /*yield*/, page.getByRole("button", { name: "Sign In" }).click()];
             case 16:
                 _b.sent();
-                _b.label = 17;
-            case 17: return [4 /*yield*/, page.getByRole("button", { name: "Schedule an Exam" }).click()];
+                return [4 /*yield*/, page.waitForLoadState("domcontentloaded")];
+            case 17:
+                _b.sent();
+                return [4 /*yield*/, randomTimeout(3000, 5000)];
             case 18:
                 _b.sent();
-                return [4 /*yield*/, randomTimeout(1000, 2000)];
-            case 19:
-                _b.sent();
-                return [4 /*yield*/, page.getByRole("button", { name: "Agree" }).click()];
+                _b.label = 19;
+            case 19: return [4 /*yield*/, page.getByRole("button", { name: "Schedule an Exam" }).click()];
             case 20:
                 _b.sent();
                 return [4 /*yield*/, randomTimeout(1000, 2000)];
             case 21:
                 _b.sent();
-                return [4 /*yield*/, page.getByRole("img", { name: "Click for calendar" }).click()];
+                return [4 /*yield*/, page.getByRole("button", { name: "Agree" }).click()];
             case 22:
                 _b.sent();
                 return [4 /*yield*/, randomTimeout(1000, 2000)];
             case 23:
                 _b.sent();
-                if (!page.getByRole("button", { name: "> Next Month, February" })) return [3 /*break*/, 26];
-                return [4 /*yield*/, page
-                        .getByRole("button", { name: "> Next Month, February" })
-                        .click()];
+                return [4 /*yield*/, page.getByRole("img", { name: "Click for calendar" }).click()];
             case 24:
                 _b.sent();
                 return [4 /*yield*/, randomTimeout(1000, 2000)];
             case 25:
                 _b.sent();
-                _b.label = 26;
+                if (!page.getByRole("button", { name: "> Next Month, February" })) return [3 /*break*/, 28];
+                return [4 /*yield*/, page
+                        .getByRole("button", { name: "> Next Month, February" })
+                        .click()];
             case 26:
-                if (!page.getByRole("button", { name: "> Next Month, March" })) return [3 /*break*/, 29];
-                return [4 /*yield*/, page.getByRole("button", { name: "> Next Month, March" }).click()];
+                _b.sent();
+                return [4 /*yield*/, randomTimeout(1000, 2000)];
             case 27:
                 _b.sent();
-                return [4 /*yield*/, randomTimeout(1000, 2000)];
+                _b.label = 28;
             case 28:
+                if (!page.getByRole("button", { name: "> Next Month, March" })) return [3 /*break*/, 31];
+                return [4 /*yield*/, page
+                        .getByRole("button", { name: "> Next Month, March" })
+                        .click()];
+            case 29:
                 _b.sent();
-                _b.label = 29;
-            case 29: return [4 /*yield*/, page.getByLabel("Friday 21st of March 2025").click()];
+                return [4 /*yield*/, randomTimeout(1000, 2000)];
             case 30:
                 _b.sent();
-                return [4 /*yield*/, randomTimeout(1000, 2000)];
-            case 31:
-                _b.sent();
-                _b.label = 32;
+                _b.label = 31;
+            case 31: return [4 /*yield*/, page.getByLabel("Friday 21st of March 2025").click()];
             case 32:
-                if (!true) return [3 /*break*/, 42];
-                return [4 /*yield*/, page.getByRole("button", { name: "Search" }).click()];
+                _b.sent();
+                return [4 /*yield*/, randomTimeout(1000, 2000)];
             case 33:
                 _b.sent();
-                return [4 /*yield*/, randomTimeout(1000, 2000)];
+                _b.label = 34;
             case 34:
-                _b.sent();
-                return [4 /*yield*/, page.waitForLoadState("domcontentloaded")];
+                if (!true) return [3 /*break*/, 44];
+                return [4 /*yield*/, page.getByRole("button", { name: "Search" }).click()];
             case 35:
                 _b.sent();
-                return [4 /*yield*/, randomTimeout(2000, 3000)];
+                return [4 /*yield*/, randomTimeout(1000, 2000)];
             case 36:
                 _b.sent();
-                return [4 /*yield*/, context.storageState({ path: "auth.json" })];
+                return [4 /*yield*/, page.waitForLoadState("domcontentloaded")];
             case 37:
                 _b.sent();
-                return [4 /*yield*/, page.locator("#testCenter_0").innerText()];
+                return [4 /*yield*/, randomTimeout(2000, 3000)];
             case 38:
-                _a = !(_b.sent()).includes("None available");
-                if (_a) return [3 /*break*/, 40];
-                return [4 /*yield*/, page.locator("#testCenter_1").innerText()];
+                _b.sent();
+                return [4 /*yield*/, context.storageState({ path: "auth.json" })];
             case 39:
-                _a = !(_b.sent()).includes("None available");
-                _b.label = 40;
+                _b.sent();
+                return [4 /*yield*/, page.locator("#testCenter_0").innerText()];
             case 40:
+                _a = !(_b.sent()).includes("None available");
+                if (_a) return [3 /*break*/, 42];
+                return [4 /*yield*/, page.locator("#testCenter_1").innerText()];
+            case 41:
+                _a = !(_b.sent()).includes("None available");
+                _b.label = 42;
+            case 42:
                 if (_a) {
                     (0, message_1.sendMessage)("MCAT Test Centers Available!");
                 }
                 else {
                     console.log("No MCAT Test Centers Available");
                 }
-                // await randomTimeout(60000, 120000);
-                return [4 /*yield*/, randomTimeout(10000, 20000)];
-            case 41:
-                // await randomTimeout(60000, 120000);
+                return [4 /*yield*/, randomTimeout(60000, 120000)];
+            case 43:
                 _b.sent();
-                return [3 /*break*/, 32];
-            case 42: return [2 /*return*/];
+                return [3 /*break*/, 34];
+            case 44: return [3 /*break*/, 48];
+            case 45:
+                error_1 = _b.sent();
+                console.error("An error occurred:", error_1);
+                timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+                screenshotPath = "error-screenshot-".concat(timestamp, ".png");
+                return [4 /*yield*/, page.screenshot({ path: screenshotPath })];
+            case 46:
+                _b.sent();
+                console.log("Screenshot saved: ".concat(screenshotPath));
+                // Optional: Close browser after error
+                return [4 /*yield*/, browser.close()];
+            case 47:
+                // Optional: Close browser after error
+                _b.sent();
+                return [3 /*break*/, 48];
+            case 48: return [2 /*return*/];
         }
     });
 }); })();
