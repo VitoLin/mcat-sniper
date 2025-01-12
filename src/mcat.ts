@@ -17,11 +17,18 @@ const day: string = "21";
 const month: string = "March";
 const year: string = "2025";
 
-const minTimeout: number = 60000;
-const maxTimeout: number = 120000;
-const numTopCloses: number = 2;
+const minimumMinutesBeforeChecking: number = 1;
+const maximumMinutesBeforeChecking: number = 2;
+const topCloses: number = 2;
 
-(async () => {
+export async function checkMCATExam(
+    day: string,
+    month: string,
+    year: string,
+    minimumMinutesBeforeChecking: number,
+    maximumMinutesBeforeChecking: number,
+    topCloses: number
+) {
     const browser = await firefox.launch({ headless: false });
     const context = await browser.newContext({ storageState: "./auth.json" });
     const page = await context.newPage();
@@ -47,7 +54,12 @@ const numTopCloses: number = 2;
         await searchForExam(page, day, month, year, address);
 
         while (true) {
-            await keepSearching(page, minTimeout, maxTimeout, numTopCloses);
+            await keepSearching(
+                page,
+                minimumMinutesBeforeChecking,
+                maximumMinutesBeforeChecking,
+                topCloses
+            );
         }
     } catch (error) {
         console.error("An error occurred:", error);
@@ -57,7 +69,7 @@ const numTopCloses: number = 2;
         await page.screenshot({ path: screenshotPath });
         console.log(`Screenshot saved: ${screenshotPath}`);
     }
-})();
+}
 
 async function addStealth(context: BrowserContext) {
     const enabledEvasions = [
