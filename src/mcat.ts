@@ -29,45 +29,48 @@ export async function checkMCATExam(
     maximumMinutesBeforeChecking: number,
     topCloses: number
 ) {
-    const browser = await firefox.launch({ headless: false });
-    const context = await browser.newContext({ storageState: "./auth.json" });
-    const page = await context.newPage();
+    while (true) {
+        const browser = await firefox.launch({ headless: false });
+        const context = await browser.newContext({
+            storageState: "./auth.json",
+        });
+        const page = await context.newPage();
 
-    await addStealth(context);
+        await addStealth(context);
+        try {
+            await goToSchedule(page);
 
-    try {
-        await goToSchedule(page);
+            // Check if already logged in, if not, attempt to login
+            if (page.url().includes("dashboard")) {
+                console.log("Already logged in");
+            } else if (await page.url().includes("login")) {
+                console.log("Logging in");
+                attemptLogin(page, username, password);
+            } else {
+                console.log("Error: Not on the expected page");
+                return -1;
+            }
 
-        // Check if already logged in, if not, attempt to login
-        if (page.url().includes("dashboard")) {
-            console.log("Already logged in");
-        } else if (await page.url().includes("login")) {
-            console.log("Logging in");
-            attemptLogin(page, username, password);
-        } else {
-            console.log("Error: Not on the expected page");
-            return -1;
+            await goToExamSearch(page);
+
+            await searchForExam(page, day, month, year, address);
+
+            while (true) {
+                await keepSearching(
+                    page,
+                    minimumMinutesBeforeChecking * 60000,
+                    maximumMinutesBeforeChecking * 60000,
+                    topCloses
+                );
+            }
+        } catch (error) {
+            console.error("An error occurred:", error);
+
+            const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+            const screenshotPath = `error-screenshot-${timestamp}.png`;
+            await page.screenshot({ path: screenshotPath });
+            console.log(`Screenshot saved: ${screenshotPath}`);
         }
-
-        await goToExamSearch(page);
-
-        await searchForExam(page, day, month, year, address);
-
-        while (true) {
-            await keepSearching(
-                page,
-                minimumMinutesBeforeChecking,
-                maximumMinutesBeforeChecking,
-                topCloses
-            );
-        }
-    } catch (error) {
-        console.error("An error occurred:", error);
-
-        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-        const screenshotPath = `error-screenshot-${timestamp}.png`;
-        await page.screenshot({ path: screenshotPath });
-        console.log(`Screenshot saved: ${screenshotPath}`);
     }
 }
 
@@ -102,3 +105,12 @@ async function addStealth(context: BrowserContext) {
         await context.addInitScript(evasion.cb as any, evasion.a);
     }
 }
+
+checkMCATExam(
+    day,
+    month,
+    year,
+    minimumMinutesBeforeChecking,
+    maximumMinutesBeforeChecking,
+    topCloses
+);

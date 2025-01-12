@@ -12,7 +12,7 @@ export async function goToSchedule(page: Page) {
 
     await page.waitForURL(
         (url) => url.href.includes("login") || url.href.includes("dashboard"),
-        { timeout: 5000 }
+        { timeout: 10000 }
     );
 }
 
@@ -64,7 +64,6 @@ export async function searchForExam(
         (await page.locator("span.ui-datepicker-month").innerText()) || "";
 
     while (!currentMonth.includes(month)) {
-        console.log("Current Month: ", currentMonth);
         await page.getByRole("button", { name: "> Next Month" }).isVisible();
         await page.getByRole("button", { name: "> Next Month" }).click();
 
