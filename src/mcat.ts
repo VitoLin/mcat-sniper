@@ -6,6 +6,8 @@ import {
     searchForExam,
     keepSearching,
 } from "./aamcLib";
+import { sendMessage } from "./message";
+import { exit } from "process";
 
 require("dotenv").config({ path: "./secrets.env" });
 
@@ -70,6 +72,12 @@ export async function checkMCATExam(
             const screenshotPath = `error-screenshot-${timestamp}.png`;
             await page.screenshot({ path: screenshotPath });
             console.log(`Screenshot saved: ${screenshotPath}`);
+            
+            sendMessage(
+                "An error occurred while checking for MCAT exam dates"
+            );
+
+            exit(1);
         }
     }
 }
