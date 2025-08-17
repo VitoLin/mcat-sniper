@@ -1,3 +1,3 @@
 #!/bin/bash
 
-tsc && node ./dist/mcat.js
+npx ts-node ./src/mcat.ts

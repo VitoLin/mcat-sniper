@@ -13,13 +13,13 @@ const username: string = process.env.MCAT_USERNAME || "";
 const password: string = process.env.MCAT_PASSWORD || "";
 const address: string = process.env.MCAT_ADDRESS || "";
 
-const day: string = "21";
-const month: string = "March";
-const year: string = "2025";
+const day: string = process.env.MCAT_DAY || "";
+const month: string = process.env.MCAT_MONTH || "";
+const year: string = process.env.MCAT_YEAR || "";
 
 const minimumMinutesBeforeChecking: number = 1;
 const maximumMinutesBeforeChecking: number = 2;
-const topCloses: number = 2;
+const topClosest: number = 2;
 
 export async function checkMCATExam(
     day: string,
@@ -105,6 +105,7 @@ async function addStealth(context: BrowserContext) {
         await context.addInitScript(evasion.cb as any, evasion.a);
     }
 }
+console.log("Loaded MCAT date from env:", { day, month, year });
 
 checkMCATExam(
     day,
@@ -112,5 +113,5 @@ checkMCATExam(
     year,
     minimumMinutesBeforeChecking,
     maximumMinutesBeforeChecking,
-    topCloses
+    topClosest
 );

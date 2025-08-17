@@ -1,14 +1,20 @@
-require("dotenv").config({ path: "./secrets.env" });
+import * as dotenv from "dotenv";
+import axios from "axios";
 
-const axios = require("axios");
+dotenv.config({ path: "./secrets.env" });
 
 // Your Webhook URL
 const webhookUrl = process.env.WEBHOOK_URL;
 
 export function sendMessage(message_content: string) {
     const message = {
-        text: message_content,
+        content: message_content,
     };
+
+    if (!webhookUrl) {
+        console.error("WEBHOOK_URL is not defined in environment variables.");
+        return;
+    }
 
     axios
         .post(webhookUrl, message)

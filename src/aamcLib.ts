@@ -71,9 +71,28 @@ export async function searchForExam(
             (await page.locator("span.ui-datepicker-month").innerText()) || "";
     }
 
-    const regex = new RegExp(`${day}.*${month}.*${year}`);
-    await page.getByLabel(regex).isVisible();
-    await page.getByLabel(regex).click();
+    const label = `${day}`.replace(/^0/, "") + "th of " + month + " " + year;
+    const candidates = await page.locator('[role="button"]').all();
+    let found = false;
+    for (const candidate of candidates) {
+        const ariaLabel = await candidate.getAttribute("aria-label");
+        if (
+            ariaLabel &&
+            ariaLabel.includes(`${day}`) &&
+            ariaLabel.includes(month) &&
+            ariaLabel.includes(year)
+        ) {
+            await candidate.isVisible();
+            await candidate.click();
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        throw new Error(
+            `No unique date button found for ${day} ${month} ${year}`
+        );
+    }
 }
 
 export async function keepSearching(
