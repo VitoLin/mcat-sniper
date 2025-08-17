@@ -30,7 +30,7 @@ export async function checkMCATExam(
     topCloses: number
 ) {
     while (true) {
-        const browser = await firefox.launch({ headless: false });
+        const browser = await firefox.launch({ headless: true });
         const context = await browser.newContext({
             storageState: "./auth.json",
         });
