@@ -71,28 +71,26 @@ export async function searchForExam(
             (await page.locator("span.ui-datepicker-month").innerText()) || "";
     }
 
-    const label = `${day}`.replace(/^0/, "") + "th of " + month + " " + year;
-    const candidates = await page.locator('[role="button"]').all();
-    let found = false;
-    for (const candidate of candidates) {
-        const ariaLabel = await candidate.getAttribute("aria-label");
-        if (
-            ariaLabel &&
-            ariaLabel.includes(`${day}`) &&
-            ariaLabel.includes(month) &&
-            ariaLabel.includes(year)
-        ) {
-            await candidate.isVisible();
-            await candidate.click();
-            found = true;
-            break;
-        }
+    // Build the expected aria-label
+    const dateObj = new Date(`${month} ${day}, ${year}`);
+    const weekday = dateObj.toLocaleDateString("en-US", { weekday: "long" });
+    // Format day with ordinal suffix
+    function ordinal(n: number) {
+        const s = ["th", "st", "nd", "rd"],
+            v = n % 100;
+        return n + (s[(v - 20) % 10] || s[v] || s[0]);
     }
-    if (!found) {
+    const dayWithSuffix = ordinal(Number(day));
+    const ariaLabel = `${weekday} ${dayWithSuffix} of ${month} ${year} Available`;
+
+    const dateButton = page.locator(`a[role="button"][aria-label="${ariaLabel}"]`);
+    if (await dateButton.count() === 0) {
         throw new Error(
-            `No unique date button found for ${day} ${month} ${year}`
+            `No available date button found for aria-label: ${ariaLabel}`
         );
     }
+    await dateButton.first().isVisible();
+    await dateButton.first().click();
 }
 
 export async function keepSearching(
