@@ -1,4 +1,5 @@
 import { BrowserContext, Page } from "playwright";
+import * as readline from "readline";
 import { sendMessage } from "./message";
 
 export async function goToSchedule(page: Page) {
@@ -17,13 +18,64 @@ export async function goToSchedule(page: Page) {
 }
 
 export async function goToExamSearch(page: Page) {
-    await page.getByRole("button", { name: "Schedule an Exam" }).isVisible();
+    await page.getByRole("button", { name: "Schedule an Exam" }).waitFor({ state: "visible", timeout: 30000 });
     await page.getByRole("button", { name: "Schedule an Exam" }).click();
 
-    await page.getByRole("button", { name: "Agree" }).isVisible();
+    await page.getByRole("button", { name: "Agree" }).waitFor({ state: "visible", timeout: 30000 });
     await page.getByRole("button", { name: "Agree" }).click();
 
-    await page.url().includes("SelectTestCenterAndDateProximity");
+    await page.waitForURL((url) => url.href.includes("SelectTestCenterAndDateProximity"), { timeout: 30000 });
+}
+
+async function promptUserForCode(): Promise<string> {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    });
+
+    return new Promise((resolve) => {
+        rl.question("Enter your 6-digit 2FA code: ", (answer) => {
+            rl.close();
+            const code = answer.trim().replace(/\s/g, "");
+            if (code.length !== 6 || !/^\d+$/.test(code)) {
+                console.error("Invalid code. Please enter exactly 6 digits.");
+                return promptUserForCode().then(resolve);
+            }
+            resolve(code);
+        });
+    });
+}
+
+export async function handle2FA(page: Page) {
+    // Click Continue to send the code
+    const continueButton = page.getByRole("button", { name: "Continue" });
+    if (await continueButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await continueButton.click();
+    }
+
+    // Wait for the code input page
+    await page.getByRole("heading", { name: "Enter Your One-time Code" }).waitFor({ timeout: 30000 });
+
+    // Check "Trust this device for 30 days" to avoid 2FA on future runs
+    const trustCheckbox = page.getByRole("checkbox", { name: /Trust this computer or device for 30 days/i });
+    if (await trustCheckbox.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await trustCheckbox.check();
+        console.log("Trusting this device for 30 days");
+    }
+
+    // Prompt user for the code
+    const code = await promptUserForCode();
+
+    // Enter code into the 6 textboxes
+    const codeInputs = page.locator('input[aria-label*="One-Time-Code"]');
+    const count = await codeInputs.count();
+
+    for (let i = 0; i < Math.min(count, code.length); i++) {
+        await codeInputs.nth(i).fill(code[i]);
+    }
+
+    // Click Authenticate button
+    await page.getByRole("button", { name: "Authenticate" }).click();
 }
 
 export async function attemptLogin(
@@ -32,18 +84,25 @@ export async function attemptLogin(
     password: string
 ) {
     await page.waitForLoadState("domcontentloaded");
-    await page.getByPlaceholder("Enter User Name").isVisible();
+    await page.getByPlaceholder("Enter User Name").waitFor({ state: "visible", timeout: 30000 });
     await page.getByPlaceholder("Enter User Name").fill(username);
 
-    await page.getByPlaceholder("Enter Password").isVisible();
+    await page.getByPlaceholder("Enter Password").waitFor({ state: "visible", timeout: 5000 });
     await page.getByPlaceholder("Enter Password").fill(password);
 
-    await page.getByRole("button", { name: "Sign In" }).isVisible();
+    await page.getByRole("button", { name: "Sign In" }).waitFor({ state: "visible", timeout: 5000 });
     await page.getByRole("button", { name: "Sign In" }).click();
 
-    await page.url().includes("dashboard");
+    // Check for 2FA page
+    const twoFactorHeading = page.getByRole("heading", { name: "Two-Factor Authentication" });
+    if (await twoFactorHeading.isVisible({ timeout: 5000 }).catch(() => false)) {
+        console.log("2FA detected - please check your email for a code");
+        await handle2FA(page);
+    }
 
-    saveAuth(page.context());
+    await page.waitForURL((url) => url.href.includes("dashboard"), { timeout: 30000 });
+
+    await saveAuth(page.context());
 }
 
 export async function searchForExam(
@@ -54,7 +113,7 @@ export async function searchForExam(
     address: string
 ) {
     if (address != "") {
-        await page.getByPlaceholder("Search by address").isVisible();
+        await page.getByPlaceholder("Search by address").waitFor({ state: "visible", timeout: 30000 });
         await page.getByPlaceholder("Search by address").fill(address);
     }
 
@@ -64,7 +123,7 @@ export async function searchForExam(
         (await page.locator("span.ui-datepicker-month").innerText()) || "";
 
     while (!currentMonth.includes(month)) {
-        await page.getByRole("button", { name: "> Next Month" }).isVisible();
+        await page.getByRole("button", { name: "> Next Month" }).waitFor({ state: "visible", timeout: 5000 });
         await page.getByRole("button", { name: "> Next Month" }).click();
 
         currentMonth =
@@ -83,13 +142,13 @@ export async function searchForExam(
     const dayWithSuffix = ordinal(Number(day));
     const ariaLabel = `${weekday} ${dayWithSuffix} of ${month} ${year} Available`;
 
-    const dateButton = page.locator(`a[role="button"][aria-label="${ariaLabel}"]`);
+    const dateButton = page.getByRole("button", { name: ariaLabel });
     if (await dateButton.count() === 0) {
         throw new Error(
             `No available date button found for aria-label: ${ariaLabel}`
         );
     }
-    await dateButton.first().isVisible();
+    await dateButton.first().waitFor({ state: "visible", timeout: 5000 });
     await dateButton.first().click();
 }
 
@@ -99,7 +158,7 @@ export async function keepSearching(
     maxTimeout: number,
     numTopCloses: number
 ) {
-    await page.getByRole("button", { name: "Search" }).isVisible();
+    await page.getByRole("button", { name: "Search" }).waitFor({ state: "visible", timeout: 30000 });
     await page.getByRole("button", { name: "Search" }).click();
     await page.waitForLoadState("domcontentloaded");
 
@@ -129,8 +188,8 @@ export async function keepSearching(
     await randomTimeout(minTimeout, maxTimeout);
 }
 
-function saveAuth(context: BrowserContext) {
-    context.storageState({ path: "auth.json" });
+async function saveAuth(context: BrowserContext) {
+    await context.storageState({ path: "auth.json" });
 }
 
 export function randomTimeout(min: number, max: number) {

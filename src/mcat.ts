@@ -7,7 +7,6 @@ import {
     keepSearching,
 } from "./aamcLib";
 import { sendMessage } from "./message";
-import { exit } from "process";
 
 require("dotenv").config({ path: "./secrets.env" });
 
@@ -31,54 +30,62 @@ export async function checkMCATExam(
     maximumMinutesBeforeChecking: number,
     topCloses: number
 ) {
-    while (true) {
-        const browser = await firefox.launch({ headless: true });
-        const context = await browser.newContext({
-            storageState: "./auth.json",
-        });
-        const page = await context.newPage();
+    const browser = await firefox.launch({ headless: false });
 
-        await addStealth(context);
-        try {
-            await goToSchedule(page);
+    try {
+        while (true) {
+            const context = await browser.newContext({
+                storageState: "./auth.json",
+            });
+            const page = await context.newPage();
 
-            // Check if already logged in, if not, attempt to login
-            if (page.url().includes("dashboard")) {
-                console.log("Already logged in");
-            } else if (await page.url().includes("login")) {
-                console.log("Logging in");
-                attemptLogin(page, username, password);
-            } else {
-                console.log("Error: Not on the expected page");
-                return -1;
-            }
+            await addStealth(context);
+            try {
+                await goToSchedule(page);
 
-            await goToExamSearch(page);
+                // Check if already logged in, if not, attempt to login
+                if (page.url().includes("dashboard")) {
+                    console.log("Already logged in");
+                } else if (page.url().includes("login")) {
+                    console.log("Logging in");
+                    await attemptLogin(page, username, password);
+                } else {
+                    console.log("Error: Not on the expected page");
+                    throw new Error("Not on the expected page after navigation");
+                }
 
-            await searchForExam(page, day, month, year, address);
+                await goToExamSearch(page);
 
-            while (true) {
-                await keepSearching(
-                    page,
-                    minimumMinutesBeforeChecking * 60000,
-                    maximumMinutesBeforeChecking * 60000,
-                    topCloses
+                await searchForExam(page, day, month, year, address);
+
+                while (true) {
+                    await keepSearching(
+                        page,
+                        minimumMinutesBeforeChecking * 60000,
+                        maximumMinutesBeforeChecking * 60000,
+                        topCloses
+                    );
+                }
+            } catch (error) {
+                console.error("An error occurred:", error);
+
+                const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+                const screenshotPath = `error-screenshot-${timestamp}.png`;
+                await page.screenshot({ path: screenshotPath });
+                console.log(`Screenshot saved: ${screenshotPath}`);
+
+                sendMessage(
+                    "An error occurred while checking for MCAT exam dates"
                 );
+
+                // Close context and retry instead of exiting
+                await context.close();
+                console.log("Retrying in 30 seconds...");
+                await new Promise((resolve) => setTimeout(resolve, 30000));
             }
-        } catch (error) {
-            console.error("An error occurred:", error);
-
-            const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-            const screenshotPath = `error-screenshot-${timestamp}.png`;
-            await page.screenshot({ path: screenshotPath });
-            console.log(`Screenshot saved: ${screenshotPath}`);
-            
-            sendMessage(
-                "An error occurred while checking for MCAT exam dates"
-            );
-
-            exit(1);
         }
+    } finally {
+        await browser.close();
     }
 }
 
