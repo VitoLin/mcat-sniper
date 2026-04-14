@@ -2,6 +2,22 @@ import { BrowserContext, Page } from "playwright";
 import * as readline from "readline";
 import { sendMessage } from "./message";
 
+export async function handleCookieBanner(page: Page) {
+    // Check for OneTrust cookie banner and accept cookies for 20 seconds
+    const acceptBtn = page.locator("#onetrust-accept-btn-handler");
+    const startTime = Date.now();
+    const duration = 5000;
+
+    while (Date.now() - startTime < duration) {
+        if (await acceptBtn.isVisible({ timeout: 1000 }).catch(() => false)) {
+            console.log("Cookie banner detected, clicking Allow and Continue...");
+            await acceptBtn.click();
+            console.log("Cookie banner accepted");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+}
+
 export async function goToSchedule(page: Page) {
     await page.goto(
         "https://students-residents.aamc.org/register-mcat-exam/register-mcat-exam"
@@ -112,6 +128,8 @@ export async function searchForExam(
     year: string,
     address: string
 ) {
+    await handleCookieBanner(page);
+
     if (address != "") {
         await page.getByPlaceholder("Search by address").waitFor({ state: "visible", timeout: 30000 });
         await page.getByPlaceholder("Search by address").fill(address);
