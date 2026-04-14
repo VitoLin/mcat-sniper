@@ -176,8 +176,10 @@ export async function keepSearching(
     maxTimeout: number,
     numTopCloses: number
 ) {
-    await page.getByRole("button", { name: "Search" }).waitFor({ state: "visible", timeout: 30000 });
-    await page.getByRole("button", { name: "Search" }).click();
+    const searchButton = page.locator("#addressSearch");
+    await searchButton.waitFor({ state: "visible", timeout: 30000 });
+    await searchButton.scrollIntoViewIfNeeded();
+    await searchButton.click();
     await page.waitForLoadState("domcontentloaded");
 
     await page.context().storageState({ path: "auth.json" });

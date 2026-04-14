@@ -20,7 +20,7 @@ const year: string = process.env.MCAT_YEAR || "";
 
 const minimumMinutesBeforeChecking: number = 1;
 const maximumMinutesBeforeChecking: number = 2;
-const topClosest: number = 2;
+const topClosest: number = 3;
 
 export async function checkMCATExam(
     day: string,
